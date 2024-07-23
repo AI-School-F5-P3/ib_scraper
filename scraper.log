@@ -1,0 +1,5 @@
+2024-07-23 16:03:18,273:INFO:Conexión exitosa a la base de datos.
+2024-07-23 16:03:18,942:ERROR:Error al scrapear la página https://quotes.toscrape.com: \u041f\u041e\u041c\u0418\u041b\u041a\u0410:  \u043d\u0435\u043c\u0430\u0454 \u0443\u043d\u0456\u043a\u0430\u043b\u044c\u043d\u043e\u0433\u043e \u043e\u0431\u043c\u0435\u0436\u0435\u043d\u043d\u044f \u0430\u0431\u043e \u043e\u0431\u043c\u0435\u0436\u0435\u043d\u043d\u044f-\u0432\u0438\u043a\u043b\u044e\u0447\u0435\u043d\u043d\u044f \u0432\u0456\u0434\u043f\u043e\u0432\u0456\u0434\u043d\u043e\u0433\u043e \u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u0457 ON CONFLICT
+
+2024-07-23 16:03:18,942:INFO:Scraping completado. Conexión a la base de datos cerrada.
+2024-07-23 16:03:18,944:INFO:Actualizaciones programadas cada 24 horas.
