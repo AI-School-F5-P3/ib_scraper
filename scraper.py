@@ -30,17 +30,30 @@ class QuoteScraper:
             logging.error(f"Error al conectar a la base de datos: {e}")
             raise
 
-    def create_table(self):
-        create_table_query = '''
+    def create_tables(self):
+        create_quotes_table_query = '''
         CREATE TABLE IF NOT EXISTS quotes (
             id SERIAL PRIMARY KEY,
-            text TEXT NOT NULL,
+            text TEXT NOT NULL UNIQUE,
             author VARCHAR(100) NOT NULL,
+            author_id INTEGER,
             tags TEXT[],
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         '''
-        self.cursor.execute(create_table_query)
+        create_authors_table_query = '''
+        CREATE TABLE IF NOT EXISTS authors (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(100) NOT NULL UNIQUE,
+            born_date VARCHAR(100),
+            born_location VARCHAR(200),
+            description TEXT,
+            link TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        '''
+        self.cursor.execute(create_quotes_table_query)
+        self.cursor.execute(create_authors_table_query)
         self.conn.commit()
 
     def scrape_page(self, url):
@@ -59,18 +72,65 @@ class QuoteScraper:
             return None
 
     def process_quote(self, quote):
-        text = quote.find('span', class_='text').text.strip('"').strip("'")  # Elimina las comillas
-        author = quote.find('small', class_='author').text
+        text = quote.find('span', class_='text').text.strip('"').strip("'")
+        author_name = quote.find('small', class_='author').text
         tags = [tag.text for tag in quote.find_all('a', class_='tag')]
-        self.insert_quote(text, author, tags)
+        author_about_url = self.base_url + quote.find('a', href=True)['href']
+        
+        author_id = self.get_or_create_author(author_name, author_about_url)
+        self.insert_quote(text, author_name, author_id, tags)
 
-    def insert_quote(self, text, author, tags):
+    def get_or_create_author(self, author_name, author_about_url):
+        # Primero, intentamos obtener el autor existente
+        self.cursor.execute("SELECT id FROM authors WHERE name = %s", (author_name,))
+        result = self.cursor.fetchone()
+        
+        if result:
+            # Si el autor ya existe, devolvemos su ID
+            return result[0]
+        else:
+            # Si el autor no existe, lo procesamos y creamos
+            return self.process_and_insert_author(author_name, author_about_url)
+
+    def process_and_insert_author(self, author_name, author_about_url):
+        try:
+            response = requests.get(author_about_url)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            born_date = soup.find('span', class_='author-born-date').text.strip()
+            born_location = soup.find('span', class_='author-born-location').text.strip()
+            description = soup.find('div', class_='author-description').text.strip()
+            
+            return self.insert_author(author_name, born_date, born_location, description, author_about_url)
+        except Exception as e:
+            logging.error(f"Error al procesar el autor {author_name}: {e}")
+            # En caso de error, insertamos el autor con información mínima
+            return self.insert_author(author_name, None, None, None, author_about_url)
+
+    def insert_author(self, name, born_date, born_location, description, link):
         insert_query = '''
-        INSERT INTO quotes (text, author, tags)
-        VALUES (%s, %s, %s)
+        INSERT INTO authors (name, born_date, born_location, description, link)
+        VALUES (%s, %s, %s, %s, %s)
+        ON CONFLICT (name) DO UPDATE
+        SET born_date = COALESCE(EXCLUDED.born_date, authors.born_date),
+            born_location = COALESCE(EXCLUDED.born_location, authors.born_location),
+            description = COALESCE(EXCLUDED.description, authors.description),
+            link = COALESCE(EXCLUDED.link, authors.link)
+        RETURNING id;
+        '''
+        self.cursor.execute(insert_query, (name, born_date, born_location, description, link))
+        author_id = self.cursor.fetchone()[0]
+        self.conn.commit()
+        return author_id
+
+    def insert_quote(self, text, author, author_id, tags):
+        insert_query = '''
+        INSERT INTO quotes (text, author, author_id, tags)
+        VALUES (%s, %s, %s, %s)
         ON CONFLICT (text) DO NOTHING
         '''
-        self.cursor.execute(insert_query, (text, author, tags))
+        self.cursor.execute(insert_query, (text, author, author_id, tags))
 
     def get_next_page(self, soup):
         next_page = soup.find('li', class_='next')
@@ -80,7 +140,7 @@ class QuoteScraper:
 
     def run(self):
         self.connect_to_db()
-        self.create_table()
+        self.create_tables()
         url = self.base_url
         while url:
             url = self.scrape_page(url)
