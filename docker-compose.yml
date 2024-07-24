@@ -9,6 +9,15 @@ services:
       - .env
     environment:
       - DB_HOST=db
+
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - UPDATE_INTERVAL=${UPDATE_INTERVAL}
+
     depends_on:
       - db
 
