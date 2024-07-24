@@ -1,1 +1,1 @@
-SELECT * FROM quotes WHERE 'inspirational' = ANY(tags);
+SELECT * FROM quotes WHERE 'Martin' = ANY(author);
