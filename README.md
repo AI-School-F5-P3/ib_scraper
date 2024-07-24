@@ -7,7 +7,9 @@ Este proyecto es un scraper automatizado que extrae citas de la página web [htt
 - Extrae citas, autores y etiquetas de [https://quotes.toscrape.com]
 - Almacena los datos en una base de datos PostgreSQL
 - Actualizaciones automáticas programadas
-- Proporciona una API para obtener citas a través de solicitudes HTTP GET.
+- Proporciona una API para obtener citas a través de solicitudes HTTP GET
+- Interfaz web para visualizar citas aleatorias
+- Función de búsqueda de citas por texto, autor y etiquetas
 
 ## Requisitos
 
@@ -45,6 +47,16 @@ UPDATE_INTERVAL=24
 - Ejecuta el script para iniciar la aplicación Flask, que proporcionará una página web simple con una cita aleatoria y un botón "Nueva Cita" para cambiar a otra cita aleatoria:
 `python app.py`
 
+- Accede a la aplicación web a través de tu navegador:
+  - La página principal mostrará una cita aleatoria con un botón "Nueva Cita" para cambiar a otra cita aleatoria.
+  - Utiliza el botón "Buscar Cita" para acceder a la página de búsqueda.
+
+- En la página de búsqueda, puedes:
+  - Buscar citas por texto
+  - Filtrar por autor
+  - Seleccionar una o varias etiquetas
+  - Utilizar el botón "Limpiar selección de tags" para deseleccionar todas las etiquetas
+
 - También puedes hacer consultas utilizando la funcionalidad integrada de herramientas de consulta. Los comandos para estas consultas están listados en el archivo `consultas.txt`. Asegúrate de seguir el formato correcto de los comandos para obtener resultados precisos.
 
 
@@ -56,3 +68,6 @@ UPDATE_INTERVAL=24
 - `app.py`: Contiene la lógica de la API.
 - `app.log`: Archivo de registro que se genera durante la ejecución de `app.py`.
 - `consultas.txt`: Lista de ejemplos de comandos para realizar consultas con el scraper.
+- `templates/`: Directorio que contiene las plantillas HTML para la interfaz web.
+  - `index.html`: Plantilla para la página principal con cita aleatoria.
+  - `busqueda.html`: Plantilla para la página de búsqueda de citas.
