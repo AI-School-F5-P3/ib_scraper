@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citas Inspiradoras</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .quote {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .text {
+            font-style: italic;
+            font-size: 1.2em;
+            color: #333;
+        }
+        .author {
+            font-weight: bold;
+            color: #555;
+            margin-top: 10px;
+        }
+        .tags {
+            color: #888;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        h1 {
+            color: #444;
+            margin-bottom: 30px;
+        }
+        .update-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .update-link:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Citas Inspiradoras</h1>
+
+    <div id="quote-container">
+        {% if quote %}
+        <div class="quote">
+            <p>"{{ quote[0] }}"</p>
+            <p>- {{ quote[1] }}</p>
+            <p>Tags: {{ quote[2]|join(', ') if quote[2] else 'No tags' }}</p>
+        </div>
+        {% else %}
+        <p>No hay citas disponibles.</p>
+        {% endif %}
+    </div>
+
+    <button id="update-quote">Actualizar Cita</button>
+
+    <script>
+    document.getElementById('update-quote').addEventListener('click', function() {
+        fetch('/random_quote')
+            .then(response => response.json())
+            .then(data => {
+                const quoteContainer = document.getElementById('quote-container');
+                quoteContainer.innerHTML = `
+                    <div class="quote">
+                        <p>"${data.text}"</p>
+                        <p>- ${data.author}</p>
+                        <p>Tags: ${data.tags ? data.tags.join(', ') : 'No tags'}</p>
+                    </div>
+                `;
+            })
+            .catch(error => console.error('Error:', error));
+    });
+    </script>
+</body>
+</html>
