@@ -58,6 +58,31 @@ def random_quote():
     except Exception as e:
         logging.error(f"Error al obtener cita aleatoria: {str(e)}")
         return jsonify({"error": str(e)}), 500
+    
+def create_table_if_not_exists():
+    try:
+        conn = psycopg2.connect(**db_config)
+        cur = conn.cursor()
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS quotes (
+            id SERIAL PRIMARY KEY,
+            text TEXT NOT NULL UNIQUE,
+            author VARCHAR(100) NOT NULL,
+            tags TEXT[],
+            source VARCHAR(50)
+        )
+        """)
+        conn.commit()
+    except Exception as e:
+        logging.error(f"Error creating table: {str(e)}")
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
+# Llama a esta función antes de iniciar la aplicación
+create_table_if_not_exists()
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

@@ -34,11 +34,11 @@ class QuoteScraper:
         create_table_query = '''
         CREATE TABLE IF NOT EXISTS quotes (
             id SERIAL PRIMARY KEY,
-            text TEXT NOT NULL,
+            text TEXT NOT NULL UNIQUE,
             author VARCHAR(100) NOT NULL,
             tags TEXT[],
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+            source VARCHAR(50)
+        )
         '''
         self.cursor.execute(create_table_query)
         self.conn.commit()
@@ -59,31 +59,66 @@ class QuoteScraper:
             return None
 
     def process_quote(self, quote):
-        text = quote.find('span', class_='text').text.strip('"').strip("'")  # Elimina las comillas
+        text = quote.find('span', class_='text').text.strip('"').strip("'")
         author = quote.find('small', class_='author').text
         tags = [tag.text for tag in quote.find_all('a', class_='tag')]
-        self.insert_quote(text, author, tags)
+        self.insert_quote(text, author, tags, 'quotes.toscrape.com')
 
-    def insert_quote(self, text, author, tags):
+    def insert_quote(self, text, author, tags, source):
         insert_query = '''
-        INSERT INTO quotes (text, author, tags)
-        VALUES (%s, %s, %s)
+        INSERT INTO quotes (text, author, tags, source)
+        VALUES (%s, %s, %s, %s)
         ON CONFLICT (text) DO NOTHING
         '''
-        self.cursor.execute(insert_query, (text, author, tags))
+        self.cursor.execute(insert_query, (text, author, tags, source))
 
     def get_next_page(self, soup):
         next_page = soup.find('li', class_='next')
         if next_page:
             return self.base_url + next_page.find('a')['href']
         return None
+    
+    def scrape_brainyquote(self, url):
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'html.parser')
+            quotes = soup.find_all('div', class_='m-brick')
+            for quote in quotes:
+                self.process_brainyquote(quote)
+            self.conn.commit()
+            logging.info(f"Datos extraídos y guardados de BrainyQuote: {url}")
+            return self.get_next_page_brainyquote(soup)
+        except Exception as e:
+            logging.error(f"Error al scrapear BrainyQuote {url}: {e}")
+            return None
+
+    def process_brainyquote(self, quote):
+        text = quote.find('a', class_='b-qt').text.strip()
+        author = quote.find('a', class_='bq-aut').text.strip()
+        tags = ['motivational']
+        self.insert_quote(text, author, tags, 'brainyquote.com')
+
+    def get_next_page_brainyquote(self, soup):
+        next_page = soup.find('ul', class_='pagination').find('li', class_='next')
+        if next_page:
+            return 'https://www.brainyquote.com' + next_page.find('a')['href']
+        return None
 
     def run(self):
         self.connect_to_db()
         self.create_table()
+        
+        # Scraping de quotes.toscrape.com
         url = self.base_url
         while url:
             url = self.scrape_page(url)
+        
+        # Scraping de BrainyQuote
+        brainy_url = 'https://www.brainyquote.com/topics/motivational-quotes'
+        while brainy_url:
+            brainy_url = self.scrape_brainyquote(brainy_url)
+        
         self.close_connection()
         logging.info("Scraping completado. Conexión a la base de datos cerrada.")
 
@@ -112,7 +147,6 @@ class AutomaticUpdater:
             schedule.run_pending()
             time.sleep(1)
 
-'''
 if __name__ == "__main__":
     db_config = {
         "dbname": os.getenv("DB_NAME"),
@@ -122,13 +156,12 @@ if __name__ == "__main__":
         "port": os.getenv("DB_PORT")
     }
     
-update_interval = int(os.getenv("UPDATE_INTERVAL", 24))
-    
-    # Crear una instancia de QuoteScraper y ejecutar el scraping inmediatamente
-scraper = QuoteScraper(db_config)
-scraper.run()
-    
-    # Luego, configurar las actualizaciones automáticas
-updater = AutomaticUpdater(db_config, update_interval)
-updater.schedule_updates()
-'''
+    update_interval = int(os.getenv("UPDATE_INTERVAL", 24))
+        
+        # Crear una instancia de QuoteScraper y ejecutar el scraping inmediatamente
+    scraper = QuoteScraper(db_config)
+    scraper.run()
+        
+        # Luego, configurar las actualizaciones automáticas
+    updater = AutomaticUpdater(db_config, update_interval)
+    updater.schedule_updates()
