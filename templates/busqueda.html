@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Búsqueda de Citas</title>
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 30px;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            outline: none;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+        .button:active {
+            background-color: #046A2A;
+            transform: scale(0.98);
+        }
+        form {
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        select, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #bdc3c7;
+            font-size: 16px;
+        }
+        label {
+            display: block;
+            text-align: left;
+            margin-top: 15px;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        #search-results {
+        background-color: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-top: 30px;
+        text-align: ;
+        }
+        .result-item {
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ecf0f1;
+        padding-bottom: 20px;
+        }
+        .result-item:last-child {
+        border-bottom: none;
+        }
+        .result-text {
+        font-style: italic;
+        font-size: 24px;
+        color: #2c3e50;
+        line-height: 1.4;
+        margin-bottom: 15px;
+        text-align: center;
+        }
+        .result-author {
+        font-size: 18px;
+        color: #34495e;
+        margin-top: 10px;
+        font-weight: bold;
+        }
+        .result-tags {
+        color: #7f8c8d;
+        font-size: 14px;
+        margin-top: 10px;
+        }
+        
+    </style>
+</head>
+<body>
+    <h1>Búsqueda de Citas</h1>
+
+    <form id="search-form">
+        <label for="search">Búsqueda:</label>
+        <input type="text" id="search" name="search" placeholder="Buscar citas...">
+
+        <label for="author">Autor:</label>
+        <select name="author" id="author">
+            <option value="">Todos los autores</option>
+            {% for author in authors %}
+                <option value="{{ author }}">{{ author }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="tags">Tags:</label>
+        <select name="tags" id="tags">
+            {% for tag in tags %}
+                <option value="{{ tag }}">{{ tag }}</option>
+            {% endfor %}
+        </select>
+
+        <button class="button" id="clear-tags">Limpiar selección de tags</button>
+
+        <script>
+        document.getElementById('clear-tags').addEventListener('click', function() {
+            document.getElementById('tags').selectedIndex = -1;
+        });
+        </script>
+        
+
+        <button type="submit" class="button">Buscar</button>
+    </form>
+
+    <div id="search-results"></div>
+
+    <a href="{{ url_for('index') }}" class="button">Volver a la página principal</a>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchForm = document.getElementById('search-form');
+            const searchResults = document.getElementById('search-results');
+            const clearTagsButton = document.getElementById('clear-tags');
+            const tagsSelect = document.getElementById('tags');
+
+            // Función para limpiar la selección de tags
+            clearTagsButton.addEventListener('click', function(e) {
+                e.preventDefault(); // Previene cualquier comportamiento por defecto
+                tagsSelect.selectedIndex = -1; // Deselecciona todas las opciones
+            });
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(searchForm);
+                const searchParams = new URLSearchParams(formData);
+        
+                fetch('/search?' + searchParams.toString())
+                    .then(response => response.json())
+                    .then(data => {
+                        searchResults.innerHTML = '';
+                        if (data.error) {
+                            searchResults.innerHTML = `<p>Error: ${data.error}</p>`;
+                        } else if (data.length === 0) {
+                            searchResults.innerHTML = '<p>No se encontraron resultados.</p>';
+                        } else {
+                            data.forEach(quote => {
+                                const resultItem = document.createElement('div');
+                                resultItem.className = 'result-item';
+                                resultItem.innerHTML = `
+                                    <p class="result-text">${quote.text}</p>
+                                    <p class="result-author">— ${quote.author}</p>
+                                    <p class="result-tags">Tags: ${quote.tags.join(', ') || 'No tags'}</p>
+                                `;
+                                searchResults.appendChild(resultItem);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        searchResults.innerHTML = '<p>Ocurrió un error al realizar la búsqueda.</p>';
+                    });
+            });
+        });
+        </script>
+</body>
+</html>

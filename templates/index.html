@@ -18,6 +18,28 @@
             color: #2c3e50;
             margin-bottom: 30px;
         }
+        .button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 30px;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            outline: none;  /* Suave transición al pasar el mouse */
+        }
+
+        .button:hover {
+            background-color: #2980b9;  /* Un azul más oscuro al pasar el mouse */
+        }
+
+        .button:active {
+            background-color: #046A2A;  /* Un verde oscuro al pulsar */
+            transform: scale(0.98);
+        }
+
         #quote-container {
             background-color: white;
             border-radius: 12px;
@@ -47,24 +69,7 @@
             font-size: 12px;
             margin-top: 15px;
         }
-        #update-quote {
-            background-color: #3498db;
-            color: white;
-            padding: 12px 24px;
-            text-decoration: none;
-            border-radius: 30px;
-            font-size: 18px;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            outline: none;
-        }
-        #update-quote:hover {
-            background-color: #2980b9;
-        }
-        #update-quote:active {
-            transform: scale(0.98);
-        }
+        
     </style>
 </head>
 <body>
@@ -82,33 +87,40 @@
         {% endif %}
     </div>
 
-    <button id="update-quote">Nueva Cita</button>
+    <button id="update-quote" class="button">Nueva Cita</button>
+    <button id="search-quote" class="button">Buscar Cita</button>
+
 
     <script>
-    document.getElementById('update-quote').addEventListener('click', function() {
-        const quoteContainer = document.getElementById('quote-container');
-        quoteContainer.style.opacity = '0';
-        
-        fetch('/random_quote')
-            .then(response => response.json())
-            .then(data => {
-                setTimeout(() => {
-                    quoteContainer.innerHTML = `
-                        <div class="quote">
-                            <p class="text">${data.text}</p>
-                            <p class="author">- ${data.author}</p>
-                            <p class="tags">Tags: ${data.tags ? data.tags.join(', ') : 'No tags'}</p>
-                        </div>
-                    `;
+        document.getElementById('update-quote').addEventListener('click', function() {
+            const quoteContainer = document.getElementById('quote-container');
+            quoteContainer.style.opacity = '0';
+            
+            fetch('/random_quote')
+                .then(response => response.json())
+                .then(data => {
+                    setTimeout(() => {
+                        quoteContainer.innerHTML = `
+                            <div class="quote">
+                                <p class="text">${data.text}</p>
+                                <p class="author">- ${data.author}</p>
+                                <p class="tags">Tags: ${data.tags ? data.tags.join(', ') : 'No tags'}</p>
+                            </div>
+                        `;
+                        quoteContainer.style.opacity = '1';
+                    }, 300);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    quoteContainer.innerHTML = '<p>Error al cargar la cita. Por favor, intenta de nuevo.</p>';
                     quoteContainer.style.opacity = '1';
-                }, 300);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                quoteContainer.innerHTML = '<p>Error al cargar la cita. Por favor, intenta de nuevo.</p>';
-                quoteContainer.style.opacity = '1';
-            });
-    });
-    </script>
+                });
+        });
+    
+        document.getElementById('search-quote').addEventListener('click', function() {
+            window.location.href = "{{ url_for('busqueda') }}";
+        });
+        </script>
+
 </body>
 </html>
