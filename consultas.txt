@@ -1,1 +1,3 @@
-SELECT * FROM quotes WHERE 'Martin' = ANY(author);
+SELECT * FROM quotes WHERE 'motivational' = ANY(tags);
+SELECT * FROM quotes WHERE author LIKE '%Martin%';
+SELECT * FROM quotes WHERE author LIKE '%Tolkien%' AND 'inspirational' = ANY(tags);
