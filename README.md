@@ -48,8 +48,7 @@ UPDATE_INTERVAL=24
 
 ## Estructura del Proyecto
 
-- `requirements.txt`: Lista de dependencias del proyecto.
 - `scraper.py`: Contiene la lógica principal del scraper y la funcionalidad actualización automática.
-- `scraper.log`: Archivo de registro que se genera durante la ejecución `scraper.py`.
+- `requirements.txt`: Lista de dependencias del proyecto.
+- `scraper.log`: Archivo de registro que se genera durante la ejecución.
 - `app.py`: Contiene la lógica de la API.
-- `app.log`: Archivo de registro que se genera durante la ejecución de `app.py`.
