@@ -2,5 +2,5 @@ venv/
 .vscode/
 __pycache__
 .env
-.log
+scraper.log
 .json
