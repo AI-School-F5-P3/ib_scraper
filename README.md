@@ -53,3 +53,4 @@ UPDATE_INTERVAL=24
 - `scraper.log`: Archivo de registro que se genera durante la ejecución de `scraper.py`.
 - `app.py`: Contiene la lógica de la API.
 - `app.log`: Archivo de registro que se genera durante la ejecución de `app.py`.
+- `consultas.txt`: Lista de ejemplos de comandos para realizar consultas con el scraper.
