@@ -172,7 +172,7 @@ class AutomaticUpdater:
             schedule.run_pending()
             time.sleep(1)
 
-
+'''
 if __name__ == "__main__":
     db_config = {
         "dbname": os.getenv("DB_NAME"),
@@ -191,3 +191,4 @@ scraper.run()
     # Luego, configurar las actualizaciones automáticas
 updater = AutomaticUpdater(db_config, update_interval)
 updater.schedule_updates()
+'''
