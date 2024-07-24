@@ -45,6 +45,8 @@ UPDATE_INTERVAL=24
 - Ejecuta el script para iniciar la aplicación Flask, que proporcionará una página web simple con una cita aleatoria y un botón "Nueva Cita" para cambiar a otra cita aleatoria:
 `python app.py`
 
+- También puedes hacer consultas utilizando la funcionalidad integrada de herramientas de consulta. Los comandos para estas consultas están listados en el archivo `consultas.txt`. Asegúrate de seguir el formato correcto de los comandos para obtener resultados precisos.
+
 
 ## Estructura del Proyecto
 
@@ -53,3 +55,4 @@ UPDATE_INTERVAL=24
 - `scraper.log`: Archivo de registro que se genera durante la ejecución de `scraper.py`.
 - `app.py`: Contiene la lógica de la API.
 - `app.log`: Archivo de registro que se genera durante la ejecución de `app.py`.
+- `consultas.txt`: Lista de ejemplos de comandos para realizar consultas con el scraper.
