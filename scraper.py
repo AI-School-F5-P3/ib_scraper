@@ -59,7 +59,7 @@ class QuoteScraper:
             return None
 
     def process_quote(self, quote):
-        text = quote.find('span', class_='text').text
+        text = quote.find('span', class_='text').text.strip('"').strip("'")  # Elimina las comillas
         author = quote.find('small', class_='author').text
         tags = [tag.text for tag in quote.find_all('a', class_='tag')]
         self.insert_quote(text, author, tags)
