@@ -10,6 +10,7 @@ Este proyecto es un scraper automatizado que extrae citas de la página web [htt
 - Proporciona una API para obtener citas a través de solicitudes HTTP GET
 - Interfaz web para visualizar citas aleatorias
 - Función de búsqueda de citas por texto, autor y etiquetas
+- Página web alojada en PythonAnywhere.
 
 ## Requisitos
 
@@ -25,18 +26,17 @@ git clone [URL_DEL_REPOSITORIO]
 `pip install -r requirements.txt`
 
 3. Configura las variables de entorno en un archivo `.env`:
+  DB_NAME=nombre_de_tu_base_de_datos
 
-DB_NAME=nombre_de_tu_base_de_datos
+  DB_USER=tu_usuario
 
-DB_USER=tu_usuario
+  DB_PASSWORD=tu_contraseña
 
-DB_PASSWORD=tu_contraseña
+  DB_HOST=localhost
 
-DB_HOST=localhost
+  DB_PORT=5432
 
-DB_PORT=5432
-
-UPDATE_INTERVAL=24
+  UPDATE_INTERVAL=24
 
 ### O...
 
@@ -74,4 +74,4 @@ UPDATE_INTERVAL=24
 - `templates/`: Directorio que contiene las plantillas HTML para la interfaz web.
   - `index.html`: Plantilla para la página principal con cita aleatoria.
   - `busqueda.html`: Plantilla para la página de búsqueda de citas.
-- Página web construida con PythonAnywhere.
+- Página web alojada en PythonAnywhere.
