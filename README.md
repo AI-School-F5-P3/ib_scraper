@@ -13,7 +13,7 @@ Este proyecto es un scraper automatizado que extrae citas de la página web [htt
 
 ## Requisitos
 
-- Python 3.12
+- Python 3.1x
 - PostgreSQL
 
 ## Instalación
@@ -38,6 +38,9 @@ DB_PORT=5432
 
 UPDATE_INTERVAL=24
 
+### O...
+
+...simplemente abre la página https://mellorio.pythonanywhere.com/ en tu navegador!
 
 ## Uso
 
@@ -71,3 +74,4 @@ UPDATE_INTERVAL=24
 - `templates/`: Directorio que contiene las plantillas HTML para la interfaz web.
   - `index.html`: Plantilla para la página principal con cita aleatoria.
   - `busqueda.html`: Plantilla para la página de búsqueda de citas.
+- Página web construida con PythonAnywhere.
