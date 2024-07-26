@@ -5,3 +5,4 @@ __pycache__
 scraper.log
 app.log
 .json
+app\

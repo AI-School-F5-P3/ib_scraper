@@ -19,7 +19,7 @@ db_config = {
     "dbname": os.getenv("DB_NAME"),
     "user": os.getenv("DB_USER"),
     "password": os.getenv("DB_PASSWORD"),
-    "host": os.getenv("DB_HOST"),
+    "host": os.getenv("DB_HOST", "db"),
     "port": os.getenv("DB_PORT")
 }
 
@@ -111,16 +111,20 @@ def random_quote():
         cur.close()
         conn.close()
 
-        logging.info("Cita aleatoria obtenida exitosamente para la API.")
-        return jsonify({
-            "text": quote[0],
-            "author": quote[1],
-            "tags": quote[2]
-        })
+        if quote:
+            logging.info("Cita aleatoria obtenida exitosamente para la API.")
+            return jsonify({
+                "text": quote[0],
+                "author": quote[1],
+                "tags": quote[2]
+            })
+        else:
+            logging.info("No se encontraron citas en la base de datos.")
+            return jsonify({"message": "No hay citas disponibles."}), 404
     except Exception as e:
         logging.error(f"Error al obtener cita aleatoria: {str(e)}")
         return jsonify({"error": str(e)}), 500
-
+    
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     logging.info(f"Starting app on port {port}.")

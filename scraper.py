@@ -17,6 +17,7 @@ class QuoteScraper:
         self.conn = None
         self.cursor = None
         self.setup_logging()
+        
     def setup_logging(self):
             logging.basicConfig(filename='scraper.log', level=logging.INFO,
                                 format='%(asctime)s:%(levelname)s:%(message)s')
@@ -48,8 +49,7 @@ class QuoteScraper:
             born_date VARCHAR(100),
             born_location VARCHAR(200),
             description TEXT,
-            link TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            link TEXT
         );
         '''
         self.cursor.execute(create_quotes_table_query)
@@ -152,32 +152,6 @@ class QuoteScraper:
             return self.base_url + next_page.find('a')['href']
         return None
     
-    def scrape_brainyquote(self, url):
-        try:
-            response = requests.get(url)
-            response.raise_for_status()
-            soup = BeautifulSoup(response.text, 'html.parser')
-            quotes = soup.find_all('div', class_='m-brick')
-            for quote in quotes:
-                self.process_brainyquote(quote)
-            self.conn.commit()
-            logging.info(f"Datos extraídos y guardados de BrainyQuote: {url}")
-            return self.get_next_page_brainyquote(soup)
-        except Exception as e:
-            logging.error(f"Error al scrapear BrainyQuote {url}: {e}")
-            return None
-
-    def process_brainyquote(self, quote):
-        text = quote.find('a', class_='b-qt').text.strip()
-        author = quote.find('a', class_='bq-aut').text.strip()
-        tags = ['motivational']
-        self.insert_quote(text, author, tags, 'brainyquote.com')
-
-    def get_next_page_brainyquote(self, soup):
-        next_page = soup.find('ul', class_='pagination').find('li', class_='next')
-        if next_page:
-            return 'https://www.brainyquote.com' + next_page.find('a')['href']
-        return None
 
     def run(self):
         self.connect_to_db()
@@ -189,10 +163,6 @@ class QuoteScraper:
         while url:
             url = self.scrape_page(url)
         
-        # Scraping de BrainyQuote
-        brainy_url = 'https://www.brainyquote.com/topics/motivational-quotes'
-        while brainy_url:
-            brainy_url = self.scrape_brainyquote(brainy_url)
         
         self.close_connection()
         logging.info("Scraping completado. Conexión a la base de datos cerrada.")
@@ -227,7 +197,7 @@ if __name__ == "__main__":
         "dbname": os.getenv("DB_NAME"),
         "user": os.getenv("DB_USER"),
         "password": os.getenv("DB_PASSWORD"),
-        "host": os.getenv("DB_HOST"),
+        "host": os.getenv("DB_HOST", "db"),
         "port": os.getenv("DB_PORT")
     }
     
