@@ -10,15 +10,17 @@ load_dotenv()
 
 
 class TestApp(unittest.TestCase):
-
+    #Limpiar los manejadores de logging existentes
     def setUp(self):
         for handler in logging.root.handlers[:]:
             logging.root.removeHandler(handler)
+        #Configurar el logging para las pruebas
         logging.basicConfig(filename='test.log', level=logging.INFO,
                             format='%(asctime)s:%(levelname)s:%(message)s')
         
         logging.info("Iniciando configuración del cliente de pruebas")
 
+        #Configurar el cliente de pruebas de Flask
         self.app = app.test_client()
         self.app.testing = True 
         logging.info("Cliente de pruebas configurado correctamente")
@@ -41,6 +43,7 @@ class TestApp(unittest.TestCase):
         mock_cur.fetchone.return_value = ("Test quote", "Test author", ["tag1", "tag2"])
         mock_connect.return_value.cursor.return_value = mock_cur
 
+        #Realizar una solicitud GET a la ruta raíz
         response = self.app.get('/')
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Test quote", response.data)
@@ -55,6 +58,7 @@ class TestApp(unittest.TestCase):
         mock_cur.fetchall.return_value = [("Test quote", "Test author", ["tag1", "tag2"])]
         mock_connect.return_value.cursor.return_value = mock_cur
 
+        #Realizar una solicitud GET a la ruta de búsqueda con parámetros
         response = self.app.get('/search?search=test&author=Test&tags=tag1')
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
