@@ -30,15 +30,19 @@ scraper = QuoteScraper(db_config)
 def index():
     try:
         logging.info("Manejando solicitud a la ruta index.")
+        #Conectar a la base de datos
         conn = psycopg2.connect(**db_config)
         cur = conn.cursor()
+        #Obtener una cita aleatoria
         cur.execute("SELECT text, author, tags FROM quotes ORDER BY RANDOM() LIMIT 1")
         quote = cur.fetchone()
         cur.close()
         conn.close()
 
         logging.info("Cita aleatoria obtenida exitosamente para la ruta index.")
+        #Renderizar la plantilla con la cita obtenida
         return render_template('index.html', quote=quote)
+    
     except Exception as e:
         logging.error(f"Error en la ruta index: {str(e)}")
         return jsonify({"error": str(e)}), 500
@@ -61,11 +65,13 @@ def busqueda():
         conn.close()
 
         return render_template('busqueda.html', authors=authors, tags=tags)
+    
     except Exception as e:
         logging.error(f"Error en la ruta de búsqueda: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/search')
+#Obtener parámetros de búsqueda
 def search_quotes():
     search_query = request.args.get('search', '')
     author = request.args.get('author', '')
@@ -75,6 +81,7 @@ def search_quotes():
         conn = psycopg2.connect(**db_config)
         cur = conn.cursor()
         
+        #Construir la consulta SQL dinámicamente
         query = "SELECT text, author, tags FROM quotes WHERE 1=1"
         params = []
 
@@ -90,12 +97,15 @@ def search_quotes():
             query += " AND tags && %s"
             params.append(tags)
 
+        #Ejecutar la consulta
         cur.execute(query, params)
         results = cur.fetchall()
         cur.close()
         conn.close()
 
+        #Devolver los resultados como JSON
         return jsonify([{"text": r[0], "author": r[1], "tags": r[2]} for r in results])
+    
     except Exception as e:
         logging.error(f"Error en la búsqueda de citas: {str(e)}")
         return jsonify({"error": str(e)}), 500
@@ -106,12 +116,14 @@ def random_quote():
         logging.info("Manejando solicitud a la ruta random_quote.")
         conn = psycopg2.connect(**db_config)
         cur = conn.cursor()
+        #Seleccionar una cita aleatoria
         cur.execute("SELECT text, author, tags FROM quotes ORDER BY RANDOM() LIMIT 1")
         quote = cur.fetchone()
         cur.close()
         conn.close()
 
         logging.info("Cita aleatoria obtenida exitosamente para la API.")
+        #Devolver la cita como JSON
         return jsonify({
             "text": quote[0],
             "author": quote[1],
@@ -122,7 +134,10 @@ def random_quote():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
+    #Obtener el puerto del entorno o usar 5000 por defecto
     port = int(os.environ.get("PORT", 5000))
     logging.info(f"Starting app on port {port}.")
+    #Imprimimos enlace en el terminal
     print(f" * Running on http://127.0.0.1:{port}")
+    #Iniciar la aplicación
     app.run(host='0.0.0.0', port=port, debug=True)
