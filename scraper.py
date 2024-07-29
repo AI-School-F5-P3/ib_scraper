@@ -7,7 +7,7 @@ import schedule
 from dotenv import load_dotenv
 import os
 
-# Cargar variables de entorno
+#Cargar variables de entorno desde el archivo .env
 load_dotenv()
 
 class QuoteScraper:
@@ -17,10 +17,13 @@ class QuoteScraper:
         self.conn = None
         self.cursor = None
         self.setup_logging()
+
+     #Configurar el sistema de logging
     def setup_logging(self):
             logging.basicConfig(filename='scraper.log', level=logging.INFO,
                                 format='%(asctime)s:%(levelname)s:%(message)s')
 
+    #Establecer conexión con la base de datos
     def connect_to_db(self):
         try:
             self.conn = psycopg2.connect(**self.db_config)
@@ -30,6 +33,7 @@ class QuoteScraper:
             logging.error(f"Error al conectar a la base de datos: {e}")
             raise
 
+    #Crear tablas si no existen
     def create_tables(self):
         create_quotes_table_query = '''
         CREATE TABLE IF NOT EXISTS quotes (
@@ -56,6 +60,7 @@ class QuoteScraper:
         self.cursor.execute(create_authors_table_query)
         self.conn.commit()
 
+    #Extraer datos de una página específica
     def scrape_page(self, url):
         try:
             response = requests.get(url)
@@ -71,27 +76,30 @@ class QuoteScraper:
             logging.error(f"Error al scrapear la página {url}: {e}")
             return None
 
+    #Procesar una cita individua
     def process_quote(self, quote):
         text = quote.find('span', class_='text').text.strip('"').strip("'")
-
-        author = quote.find('small', class_='author').text
-        tags = [tag.text for tag in quote.find_all('a', class_='tag')]
-        self.insert_quote(text, author, tags, 'quotes.toscrape.com')
-
-    def insert_quote(self, text, author, tags, source):
-        insert_query = '''
-        INSERT INTO quotes (text, author, tags, source)
-        VALUES (%s, %s, %s, %s)
-        ON CONFLICT (text) DO NOTHING
-        '''
-        self.cursor.execute(insert_query, (text, author, tags, source))
-
         author_name = quote.find('small', class_='author').text
         tags = [tag.text for tag in quote.find_all('a', class_='tag')]
         author_about_url = self.base_url + quote.find('a', href=True)['href']
         
         author_id = self.get_or_create_author(author_name, author_about_url)
         self.insert_quote(text, author_name, author_id, tags)
+
+    #Insertar la cita en la base de datos
+    def insert_quote(self, text, author, author_id, tags, source='quotes.toscrape.com'):
+        insert_query = '''
+        INSERT INTO quotes (text, author, author_id, tags, source)
+        VALUES (%s, %s, %s, %s, %s)
+        ON CONFLICT (text) DO NOTHING
+        '''
+        try:
+            self.cursor.execute(insert_query, (text, author, author_id, tags, source))
+            self.conn.commit()
+            logging.info(f"Quote inserted successfully: {text[:30]}...")
+        except Exception as e:
+            self.conn.rollback()
+            logging.error(f"Error inserting quote: {e}")
 
     def get_or_create_author(self, author_name, author_about_url):
         # Primero, intentamos obtener el autor existente
@@ -105,6 +113,7 @@ class QuoteScraper:
             # Si el autor no existe, lo procesamos y creamos
             return self.process_and_insert_author(author_name, author_about_url)
 
+    #Obtener los detalles del autor desde la página web.
     def process_and_insert_author(self, author_name, author_about_url):
         try:
             response = requests.get(author_about_url)
@@ -114,13 +123,18 @@ class QuoteScraper:
             born_date = soup.find('span', class_='author-born-date').text.strip()
             born_location = soup.find('span', class_='author-born-location').text.strip()
             description = soup.find('div', class_='author-description').text.strip()
-            
+            #Llama a insert_author para guardar esta información.
             return self.insert_author(author_name, born_date, born_location, description, author_about_url)
         except Exception as e:
             logging.error(f"Error al procesar el autor {author_name}: {e}")
-            # En caso de error, insertamos el autor con información mínima
+            #En caso de error, inserta el autor con información mínima
             return self.insert_author(author_name, None, None, None, author_about_url)
 
+    '''
+    Inserción de los datos del autor en la base de datos.
+    Utiliza una consulta SQL que inserta un nuevo autor o actualiza uno existente 
+    si ya hay un autor con el mismo nombre.
+    '''
     def insert_author(self, name, born_date, born_location, description, link):
         insert_query = '''
         INSERT INTO authors (name, born_date, born_location, description, link)
@@ -137,26 +151,16 @@ class QuoteScraper:
         self.conn.commit()
         return author_id
 
-    def insert_quote(self, text, author, author_id, tags):
-        insert_query = '''
-        INSERT INTO quotes (text, author, author_id, tags)
-        VALUES (%s, %s, %s, %s)
-        ON CONFLICT (text) DO NOTHING
-        '''
-        self.cursor.execute(insert_query, (text, author, author_id, tags))
-
-
+    #Obtener la URL de la siguiente página
     def get_next_page(self, soup):
         next_page = soup.find('li', class_='next')
         if next_page:
             return self.base_url + next_page.find('a')['href']
         return None
     
-
+    #Ejecutar el proceso de scraping
     def run(self):
         self.connect_to_db()
-       
-        # Scraping de quotes.toscrape.com
         self.create_tables()
 
         url = self.base_url
@@ -166,6 +170,7 @@ class QuoteScraper:
         self.close_connection()
         logging.info("Scraping completado. Conexión a la base de datos cerrada.")
 
+    #Cerrar la conexión a la base de datos
     def close_connection(self):
         if self.cursor:
             self.cursor.close()
@@ -183,6 +188,7 @@ class AutomaticUpdater:
         self.scraper.run()
         logging.info("Actualización automática completada.")
 
+    #Programar actualizaciones periódicas
     def schedule_updates(self):
         schedule.every(self.update_interval).hours.do(self.update_database)
         logging.info(f"Actualizaciones programadas cada {self.update_interval} horas.")
@@ -202,10 +208,10 @@ if __name__ == "__main__":
     
     update_interval = int(os.getenv("UPDATE_INTERVAL", 24))
         
-        # Crear una instancia de QuoteScraper y ejecutar el scraping inmediatamente
+    #Ejecutar scraping inicial inmediatamente
     scraper = QuoteScraper(db_config)
     scraper.run()
         
-        # Luego, configurar las actualizaciones automáticas
+    #Luego, configurar las actualizaciones automáticas
     updater = AutomaticUpdater(db_config, update_interval)
     updater.schedule_updates()
