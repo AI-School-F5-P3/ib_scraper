@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Búsqueda de Citas</title>
     <style>
+         /* Estilos generales del cuerpo de la página */
         body {
             font-family: 'Georgia', serif;
             max-width: 800px;
@@ -14,10 +15,12 @@
             background-color: #f5f5f5;
             color: #333;
         }
+        /* Estilo para el título principal */
         h1 {
             color: #2c3e50;
             margin-bottom: 30px;
         }
+        /* Estilos para los botones */
         .button {
             background-color: #3498db;
             color: white;
@@ -37,6 +40,7 @@
             background-color: #046A2A;
             transform: scale(0.98);
         }
+        /* Estilos para el formulario */
         form {
             background-color: white;
             border-radius: 12px;
@@ -44,6 +48,7 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
+        /* Estilos para los campos de selección y entrada de texto */
         select, input[type="text"] {
             width: 100%;
             padding: 10px;
@@ -52,6 +57,7 @@
             border: 1px solid #bdc3c7;
             font-size: 16px;
         }
+        /* Estilos para las etiquetas de los campos del formulario */
         label {
             display: block;
             text-align: left;
@@ -59,6 +65,7 @@
             color: #2c3e50;
             font-weight: bold;
         }
+        /* Estilos para la sección de resultados de búsqueda */
         #search-results {
         background-color: white;
         border-radius: 12px;
@@ -67,6 +74,7 @@
         margin-top: 30px;
         text-align: ;
         }
+        /* Estilos para cada elemento de resultado */
         .result-item {
         margin-bottom: 20px;
         border-bottom: 1px solid #ecf0f1;
@@ -75,6 +83,7 @@
         .result-item:last-child {
         border-bottom: none;
         }
+        /* Estilos para el texto de la cita */
         .result-text {
         font-style: italic;
         font-size: 24px;
@@ -83,12 +92,14 @@
         margin-bottom: 15px;
         text-align: center;
         }
+        /* Estilos para el autor de la cita */
         .result-author {
         font-size: 18px;
         color: #34495e;
         margin-top: 10px;
         font-weight: bold;
         }
+        /* Estilos para los tags de la cita */
         .result-tags {
         color: #7f8c8d;
         font-size: 14px;
@@ -99,11 +110,12 @@
 </head>
 <body>
     <h1>Búsqueda de Citas</h1>
-
+    <!-- Formulario de búsqueda -->
     <form id="search-form">
+        <!-- Campo de búsqueda general -->
         <label for="search">Búsqueda:</label>
         <input type="text" id="search" name="search" placeholder="Buscar citas...">
-
+        <!-- Selector de autor -->
         <label for="author">Autor:</label>
         <select name="author" id="author">
             <option value="">Todos los autores</option>
@@ -111,7 +123,7 @@
                 <option value="{{ author }}">{{ author }}</option>
             {% endfor %}
         </select>
-
+        <!-- Selector de tags -->
         <label for="tags">Tags:</label>
         <select name="tags" id="tags">
             {% for tag in tags %}
@@ -119,20 +131,23 @@
             {% endfor %}
         </select>
 
+        <!-- Botón para limpiar la selección de tags -->
         <button class="button" id="clear-tags">Limpiar selección de tags</button>
 
+        <!-- Script para limpiar la selección de tags -->
         <script>
         document.getElementById('clear-tags').addEventListener('click', function() {
             document.getElementById('tags').selectedIndex = -1;
         });
         </script>
         
-
+        <!-- Botón para enviar el formulario -->
         <button type="submit" class="button">Buscar</button>
     </form>
 
+    <!-- Contenedor para los resultados de la búsqueda -->
     <div id="search-results"></div>
-
+    <!-- Enlace para volver a la página principal -->
     <a href="{{ url_for('index') }}" class="button">Volver a la página principal</a>
 
     <script>
@@ -147,11 +162,13 @@
                 e.preventDefault(); // Previene cualquier comportamiento por defecto
                 tagsSelect.selectedIndex = -1; // Deselecciona todas las opciones
             });
+            // Manejador del evento de envío del formulario
             searchForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const formData = new FormData(searchForm);
                 const searchParams = new URLSearchParams(formData);
-        
+
+                // Realizar la petición de búsqueda
                 fetch('/search?' + searchParams.toString())
                     .then(response => response.json())
                     .then(data => {
@@ -161,6 +178,7 @@
                         } else if (data.length === 0) {
                             searchResults.innerHTML = '<p>No se encontraron resultados.</p>';
                         } else {
+                            // Mostrar los resultados de la búsqueda
                             data.forEach(quote => {
                                 const resultItem = document.createElement('div');
                                 resultItem.className = 'result-item';

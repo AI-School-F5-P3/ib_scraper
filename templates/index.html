@@ -32,11 +32,11 @@
         }
 
         .button:hover {
-            background-color: #2980b9;  /* Un azul más oscuro al pasar el mouse */
+            background-color: #2980b9;  
         }
 
         .button:active {
-            background-color: #046A2A;  /* Un verde oscuro al pulsar */
+            background-color: #046A2A;  
             transform: scale(0.98);
         }
 
@@ -74,7 +74,7 @@
 </head>
 <body>
     <h1>Citas Inspiradoras</h1>
-
+     <!-- Contenedor para mostrar la cita -->
     <div id="quote-container">
         {% if quote %}
         <div class="quote">
@@ -86,16 +86,17 @@
         <p>No hay citas disponibles.</p>
         {% endif %}
     </div>
-
+    <!-- Botones para actualizar la cita y buscar citas -->
     <button id="update-quote" class="button">Nueva Cita</button>
     <button id="search-quote" class="button">Buscar Cita</button>
 
 
     <script>
+        // Evento para actualizar la cita
         document.getElementById('update-quote').addEventListener('click', function() {
             const quoteContainer = document.getElementById('quote-container');
             quoteContainer.style.opacity = '0';
-            
+            // Solicitud AJAX para obtener una nueva cita aleatoria
             fetch('/random_quote')
                 .then(response => response.json())
                 .then(data => {
@@ -116,7 +117,7 @@
                     quoteContainer.style.opacity = '1';
                 });
         });
-    
+         // Evento para redirigir a la página de búsqueda
         document.getElementById('search-quote').addEventListener('click', function() {
             window.location.href = "{{ url_for('busqueda') }}";
         });
