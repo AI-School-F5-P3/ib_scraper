@@ -2,17 +2,36 @@ import unittest
 from unittest.mock import patch, MagicMock
 from app import app
 import logging
+from dotenv import load_dotenv
+import os
 
-# Configuración del logging
-logging.basicConfig(filename='test.log', level=logging.INFO,
-                    format='%(asctime)s:%(levelname)s:%(message)s')
+load_dotenv()
+
+
 
 class TestApp(unittest.TestCase):
 
     def setUp(self):
+        for handler in logging.root.handlers[:]:
+            logging.root.removeHandler(handler)
+        logging.basicConfig(filename='test.log', level=logging.INFO,
+                            format='%(asctime)s:%(levelname)s:%(message)s')
+        
+        logging.info("Iniciando configuración del cliente de pruebas")
+
         self.app = app.test_client()
         self.app.testing = True 
-        logging.info("Configurando TestApp")
+        logging.info("Cliente de pruebas configurado correctamente")
+
+        logging.info("Cargando configuración de la base de datos desde .env")
+        self.db_config = {
+            "dbname": os.getenv("DB_NAME"),
+            "user": os.getenv("DB_USER"),
+            "password": os.getenv("DB_PASSWORD"),
+            "host": os.getenv("DB_HOST"),
+            "port": os.getenv("DB_PORT")
+        }
+        logging.info("Configuración de la base de datos cargada: %s", self.db_config)
 
     @patch('app.psycopg2.connect')
     def test_index_route(self, mock_connect):
