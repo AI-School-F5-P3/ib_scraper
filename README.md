@@ -75,3 +75,5 @@ git clone [URL_DEL_REPOSITORIO]
   - `index.html`: Plantilla para la página principal con cita aleatoria.
   - `busqueda.html`: Plantilla para la página de búsqueda de citas.
 - Página web alojada en PythonAnywhere.
+- `test_app.py` y `test_scraper.py`: Incluyen pruebas de verificación de distintos métodos utilizados en la app.
+- `test.log`: Archivo de registro que se genera durante la ejecución de `test_app.py` y `test_scraper.py`.
