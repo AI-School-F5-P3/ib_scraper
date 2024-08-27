@@ -4,4 +4,6 @@ __pycache__
 .env
 scraper.log
 app.log
+test.log
 .json
+pythonanywhere.txt
